@@ -6,5 +6,5 @@ cd 3rdparty
 for d in ./*/ ; do (cd "$d" && ./build.sh); done
 cd ../../local_pkgbuild
 for d in ./*/ ; do (cd "$d" && ./build.sh); done
-cd ../../alci-iso-repo/
+cd ../../alci-repo/
 ./repo.sh
