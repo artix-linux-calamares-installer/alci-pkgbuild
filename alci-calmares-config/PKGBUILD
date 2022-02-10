@@ -1,7 +1,7 @@
 # Maintainer: Aakash Sharma <aakashsensharma@gmail.com>
 pkgname=alci-calamares-config
 _destname1="/etc"
-pkgver=r.
+pkgver=r1.19e5cfe
 pkgrel=1
 pkgdesc="calamares for alci"
 arch=('any')
