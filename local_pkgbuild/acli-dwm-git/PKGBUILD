@@ -1,5 +1,5 @@
 # Maintainer: Aakash Sen Sharma <aakashsensharma@gmail.com>
-pkgname=alci-dwm
+pkgname=alci-dwm-git
 _pkgname=alci-dwm
 _destname1="/etc/skel/.config/"
 _destname2="/usr/share/xsessions/"
