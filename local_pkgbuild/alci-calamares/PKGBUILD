@@ -1,51 +1,45 @@
 # Maintainer: Aakash Sen Sharma <aakashsensharma@gmail.com>
-
 pkgname=alci-calamares
 _pkgname=calamares
 pkgver=3.2.51
 pkgrel=1
 pkgdesc='Distribution-independent installer framework'
-arch=('i686' 'x86_64')
+arch=('x86_64')
 license=(GPL)
-url="https://github.com/calamares/calamares/releases"
+url="https://github.com/calamares/calamares"
 license=('LGPL')
-depends=('kconfig' 'kcoreaddons' 'kiconthemes' 'ki18n' 'kio' 'solid' 'yaml-cpp' 'kpmcore>=4.2.0' 'mkinitcpio-openswap'
-         'boost-libs' 'ckbcomp' 'hwinfo' 'qt5-svg' 'polkit-qt5' 'gtk-update-icon-cache' 'plasma-framework'
-         'qt5-xmlpatterns' 'squashfs-tools' 'libpwquality' 'efibootmgr' 'icu')
-conflicts=()
-makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'git' 'boost')
-backup=('usr/share/calamares/modules/bootloader.conf'
-        'usr/share/calamares/modules/displaymanager.conf'
-        'usr/share/calamares/modules/initcpio.conf'
-        'usr/share/calamares/modules/unpackfs.conf')
-
-source=("$_pkgname-$pkgver::$url/download/v$pkgver/$_pkgname-$pkgver.tar.gz"
-	"calamares.desktop"
-	"calamares_polkit"
-	"49-nopasswd-calamares.rules")
-
+depends=('yaml-cpp' 'kpmcore>=3.1.0' 'boost-libs' 'hwinfo' 'gtk-update-icon-cache'
+          'libpwquality' 'polkit-qt5' 'qt5-xmlpatterns' 'plasma-framework')
+makedepends=('extra-cmake-modules' 'qt5-tools' 'qt5-translations' 'boost')
+optdepends=('calamares-branding: Artix branding')
+source=("${url}/archive/v$pkgver.tar.gz"
+        postcfg.patch
+        services-runit.patch
+        services-s6.patch
+        services-suite66.patch
+        services-dinit.patch
+		calamares.desktop
+		49-nopasswd-calamares.rules
+		calamares_polkit
+		)
 sha256sums=('30eb3e568ab31d84525db38ef2fa23fb78efb584275b26007137a54b9f782d70'
+            '77c2d46c511ad6ea4f2c9663007f9d5a4cc2c385223498982d3feb4e56becc68'
+            '820d515f5788b7b55e3ebaa2357db643bc1d554e931649980d8b39a6a26b51e0'
+            'c1c1ba7d14754cf284b75812323cf1799d6f55c6ea2c12b3e6a110855306b3f6'
+            'b74faf40a76cc9648967fbfb79796c9e0f283d4088d0a200baed14fe923c6b8e'
+            'e8fe3bd2204a527409e495f23bf9c59098d97c5d21afd97006a81ff4fc414e24'
             '973cda1795a5b3b9e7ba6a9ef21ccfba2e3d149d64d0329cf78baafd1fb59e47'
-            '4c8b48518b0047672e835e0a6c8a66342b316ab8835cf4c331030de4830dcea2'
-            '56d85ff6bf860b9559b8c9f997ad9b1002f3fccc782073760eca505e3bddd176')
-
-pkgver() {
-	cd ${srcdir}/$_pkgname-$pkgver
-	_ver="$(cat CMakeLists.txt | grep -m3 -e "  VERSION" | grep -o "[[:digit:]]*" | xargs | sed s'/ /./g')"
-	_git=".r$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
-	printf '%s%s' "${_ver}" #"${_git}"
-}
+            '56d85ff6bf860b9559b8c9f997ad9b1002f3fccc782073760eca505e3bddd176'
+            '4c8b48518b0047672e835e0a6c8a66342b316ab8835cf4c331030de4830dcea2')
 
 prepare() {
-
-	sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' "$srcdir/${_pkgname}-${pkgver}/CMakeLists.txt"
-	sed -i -e 's/# DEBUG_FILESYSTEMS/DEBUG_FILESYSTEMS/' "$srcdir/${_pkgname}-${pkgver}/CMakeLists.txt"
-
-	# add pkgrelease to patch-version
-	cd ${_pkgname}-${pkgver}
-	_patchver="$(cat CMakeLists.txt | grep -m3 -e CALAMARES_VERSION_PATCH | grep -o "[[:digit:]]*" | xargs)"
-	sed -i -e "s|CALAMARES_VERSION_PATCH $_patchver|CALAMARES_VERSION_PATCH $_patchver-$pkgrel|g" CMakeLists.txt
-
+    cd $_pkgname-$pkgver
+    # patches here
+    patch -Np 1 -i $srcdir/postcfg.patch
+    patch -Np 1 -i $srcdir/services-runit.patch
+    patch -Np 1 -i $srcdir/services-s6.patch
+    patch -Np 1 -i $srcdir/services-suite66.patch
+    patch -Np 1 -i $srcdir/services-dinit.patch
 }
 
 build() {
@@ -53,27 +47,24 @@ build() {
 
 	mkdir -p build
 	cd build
-	cmake .. \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_INSTALL_PREFIX=/usr \
-	-DCMAKE_INSTALL_LIBDIR=lib \
-	-DWITH_PYTHONQT=OFF \
-	-DWITH_KF5DBus=OFF \
-	-DBoost_NO_BOOST_CMAKE=ON \
-	-DWEBVIEW_FORCE_WEBKIT=OFF \
-	-DSKIP_MODULES="webview tracking interactiveterminal initramfs \
-	initramfscfg dracut dracutlukscfg \
-	dummyprocess dummypython dummycpp \
-	dummypythonqt services-openrc \
-	keyboardq localeq welcomeq"
-	make
+        cmake .. \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DWITH_PYTHONQT:BOOL=OFF \
+              -DINSTALL_CONFIG:BOOL=ON \
+              -DINSTALL_POLKIT:BOOL=ON \
+              -DBoost_NO_BOOST_CMAKE=ON \
+              -DSKIP_MODULES="webview interactiveterminal initramfs \
+                              initramfscfg packagechooser services-systemd \
+                              dummyprocess dummypython dummycpp dummypythonqt"
+        make
 }
 
 package() {
-	cd ${_pkgname}-${pkgver}/build
+	cd $_pkgname-$pkgver/build
 	make DESTDIR="$pkgdir" install
 	install -Dm644 "${srcdir}/calamares.desktop" "$pkgdir/etc/xdg/autostart/calamares.desktop"
 	install -Dm755 "${srcdir}/calamares_polkit" "$pkgdir/usr/bin/calamares_polkit"
 	install -Dm644 "${srcdir}/49-nopasswd-calamares.rules" "$pkgdir/etc/polkit-1/rules.d/49-nopasswd-calamares.rules"
-	chmod 750 "$pkgdir"/etc/polkit-1/rules.d
 }

@@ -16,4 +16,3 @@ echo "################################################################"
 sudo rm -rf pkg
 sudo rm -rf src
 rm -r ~/.cmake
-find . -type f  | grep -i "calamares-.*$"  | xargs rm -rf
