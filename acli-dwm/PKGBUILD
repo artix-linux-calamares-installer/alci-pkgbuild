@@ -1,0 +1,39 @@
+# Maintainer: Aakash Sen Sharma <aakashsensharma@gmail.com>
+pkgname=alci-dwm
+_pkgname=alci-dwm
+_destname1="/etc/skel/.config/"
+_destname2="/usr/share/xsessions/"
+pkgver=21.01
+pkgrel=21
+pkgdesc="Configuration files for alci Iso"
+arch=('any')
+url="https://github.com/artix-linux-calamares-installer/alci-dwm"
+license=('GPL3')
+makedepends=('git')
+depends=()
+provides=("${pkgname}")
+options=(!strip !emptydirs)
+source=(${_pkgname}::"git+https://github.com/artix-linux-calamares-installer/${_pkgname}.git")
+sha256sums=('SKIP')
+install='readme.install'
+
+build() {
+  cd "$srcdir/$_pkgname/etc/skel/.config/alci-dwm/"
+  make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
+}
+
+package() {
+
+  cd "$srcdir/$_pkgname/etc/skel/.config/alci-dwm/"
+  make PREFIX=/usr DESTDIR="$pkgdir" install
+
+	install -dm755 ${pkgdir}${_destname1}
+	cp -r  ${srcdir}/${_pkgname}${_destname1}* ${pkgdir}${_destname1}
+
+	install -dm755 ${pkgdir}${_destname2}
+	cp -r  ${srcdir}/${_pkgname}${_destname2}* ${pkgdir}${_destname2}
+	mv ${pkgdir}${_destname2}/dwm.desktop ${pkgdir}${_destname2}/dwmalci.desktop
+	sed -i "s/Exec=dwm/Exec=dwmalci/g" ${pkgdir}${_destname2}/dwmalci.desktop
+	sed -i "s/Name=Dwm/Name=Dwmalci/g" ${pkgdir}${_destname2}/dwmalci.desktop	
+}
+
